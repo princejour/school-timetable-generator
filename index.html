@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>جدولي التونسي — مولّد الجداول المدرسية</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f5f7fb;color:#172033}header{background:#173b63;color:#fff;padding:18px 22px;position:sticky;top:0;z-index:5}h1{margin:0;font-size:22px}.sub{opacity:.85;font-size:13px;margin-top:5px}.wrap{max-width:1400px;margin:auto;padding:18px}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.tabs button,.btn{border:0;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:700}.tabs button{background:#e4eaf2}.tabs button.active,.primary{background:#1769aa;color:#fff}.danger{background:#c62828;color:#fff}.panel{background:#fff;border:1px solid #dce3ec;border-radius:13px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #0000000b}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}label{display:block;font-weight:700;font-size:13px;margin-bottom:5px}input,select{width:100%;padding:9px;border:1px solid #ccd5e0;border-radius:8px;font-size:14px}table{width:100%;border-collapse:collapse;min-width:800px}th,td{border:1px solid #d9e0e8;padding:7px;text-align:center}th{background:#edf2f7}.scroll{overflow:auto}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.notice{padding:10px;border-radius:9px;background:#eef6ff}.err{background:#fff0f0;color:#9b1c1c}.ok{background:#eef9f0;color:#176b2d}.activity{background:#eef6ff;border-radius:6px;padding:5px;font-size:12px;min-height:40px}.small{font-size:12px;color:#687589}.hidden{display:none}.stat{padding:14px;border-radius:10px;background:#f1f5f9;text-align:center}.stat b{font-size:23px;display:block}
+</style></head>
+<body>
+<header><h1>جدولي التونسي</h1><div class="sub">مولّد جداول مدرسية عربي RTL — مدد الحصص ثابتة ومنع تضارب الأستاذ والقسم والقاعة</div></header>
+<div class="wrap">
+<div class="tabs">
+<button class="active" data-tab="home">الرئيسية</button><button data-tab="teachers">الأساتذة</button><button data-tab="classes">الأقسام</button><button data-tab="rooms">القاعات</button><button data-tab="activities">الحصص</button><button data-tab="schedule">الجدول</button>
+</div>
+<section id="home" class="tab panel">
+<h2>إعداد المؤسسة</h2><div class="grid">
+<div><label>اسم المؤسسة</label><input id="school" value="المؤسسة التربوية"></div>
+<div><label>بداية اليوم</label><input id="start" type="time" value="08:00"></div>
+<div><label>نهاية اليوم</label><input id="end" type="time" value="14:00"></div>
+<div><label>عدد أيام العمل</label><select id="days"><option value="5">5 — الاثنين إلى الجمعة</option><option value="6">6 — الاثنين إلى السبت</option></select></div>
+</div>
+<div class="grid" style="margin-top:14px">
+<div class="stat"><b id="nTeachers">0</b>أستاذ</div><div class="stat"><b id="nClasses">0</b>قسم</div><div class="stat"><b id="nActivities">0</b>نشاط</div><div class="stat"><b id="nRooms">0</b>قاعة</div>
+</div>
+<div class="actions"><button class="btn primary" onclick="generate()">توليد الجدول</button><button class="btn" onclick="save()">حفظ البيانات</button><button class="btn" onclick="load()">استرجاع البيانات</button><button class="btn danger" onclick="resetAll()">مسح الكل</button></div>
+<div id="msg" class="notice" style="margin-top:12px">أدخل المعطيات ثم اضغط «توليد الجدول».</div>
+</section>
+
+<section id="teachers" class="tab panel hidden"><h2>الأساتذة</h2><div class="grid"><input id="tName" placeholder="اسم الأستاذ"><input id="tHours" type="number" min="1" placeholder="الساعات الأسبوعية"><button class="btn primary" onclick="addTeacher()">إضافة</button></div><div class="scroll" style="margin-top:12px"><table><thead><tr><th>الأستاذ</th><th>الساعات</th><th></th></tr></thead><tbody id="teachersBody"></tbody></table></div></section>
+
+<section id="classes" class="tab panel hidden"><h2>الأقسام</h2><div class="grid"><input id="cName" placeholder="مثال: 7 أساسي 1"><button class="btn primary" onclick="addClass()">إضافة</button></div><div class="scroll" style="margin-top:12px"><table><thead><tr><th>القسم</th><th></th></tr></thead><tbody id="classesBody"></tbody></table></div></section>
+
+<section id="rooms" class="tab panel hidden"><h2>القاعات والمخابر</h2><div class="grid"><input id="rName" placeholder="مثال: قاعة 12"><button class="btn primary" onclick="addRoom()">إضافة</button></div><div class="scroll" style="margin-top:12px"><table><thead><tr><th>القاعة</th><th></th></tr></thead><tbody id="roomsBody"></tbody></table></div></section>
+
+<section id="activities" class="tab panel hidden"><h2>الحصص والأنشطة</h2>
+<div class="grid">
+<input id="aSubject" placeholder="المادة">
+<select id="aTeacher"></select><select id="aClass"></select><select id="aRoom"></select>
+<input id="aDuration" type="number" min="1" max="6" value="1" placeholder="مدة الحصة بالساعات">
+<input id="aCount" type="number" min="1" value="1" placeholder="عدد المرات أسبوعيًا">
+<select id="aGroup"><option value="">القسم كامل</option><option value="فوج 1">فوج 1</option><option value="فوج 2">فوج 2</option></select>
+<button class="btn primary" onclick="addActivity()">إضافة حصة</button>
+</div>
+<p class="small">مدة الحصة لا تُجزّأ ولا تُحوّل تلقائيًا. حصة ساعتين تبقى ساعتين وحصة ثلاث ساعات تبقى ثلاث ساعات.</p>
+<div class="scroll"><table><thead><tr><th>المادة</th><th>الأستاذ</th><th>القسم</th><th>القاعة</th><th>المدة</th><th>التكرار</th><th>الفوج</th><th></th></tr></thead><tbody id="activitiesBody"></tbody></table></div></section>
+
+<section id="schedule" class="tab panel hidden"><h2>الجدول الأسبوعي</h2><div class="actions"><button class="btn primary" onclick="generate()">إعادة التوليد</button><button class="btn" onclick="exportCSV()">تصدير CSV</button><button class="btn" onclick="window.print()">طباعة</button></div><div id="scheduleView" class="scroll" style="margin-top:12px"></div></section>
+</div>
+<script>
+const KEY='jadwali-tn-v1';let db={teachers:[],classes:[],rooms:[],activities:[],schedule:[]};
+const days=['الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+const slots=['08:00–09:00','09:00–10:00','10:00–11:00','11:00–12:00','12:00–13:00','13:00–14:00'];
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.tab').forEach(x=>x.classList.add('hidden'));document.getElementById(b.dataset.tab).classList.remove('hidden')});
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){nTeachers.textContent=db.teachers.length;nClasses.textContent=db.classes.length;nActivities.textContent=db.activities.length;nRooms.textContent=db.rooms.length;
+teachersBody.innerHTML=db.teachers.map((x,i)=>'<tr><td>'+esc(x.name)+'</td><td>'+x.hours+'</td><td><button class="btn danger" onclick="del(\'teachers\','+i+')">حذف</button></td></tr>').join('');
+classesBody.innerHTML=db.classes.map((x,i)=>'<tr><td>'+esc(x)+'</td><td><button class="btn danger" onclick="del(\'classes\','+i+')">حذف</button></td></tr>').join('');
+roomsBody.innerHTML=db.rooms.map((x,i)=>'<tr><td>'+esc(x)+'</td><td><button class="btn danger" onclick="del(\'rooms\','+i+')">حذف</button></td></tr>').join('');
+aTeacher.innerHTML=db.teachers.map((x,i)=>'<option value="'+i+'">'+esc(x.name)+'</option>').join('');
+aClass.innerHTML=db.classes.map((x,i)=>'<option value="'+i+'">'+esc(x)+'</option>').join('');
+aRoom.innerHTML='<option value="">بدون قاعة</option>'+db.rooms.map((x,i)=>'<option value="'+i+'">'+esc(x)+'</option>').join('');
+activitiesBody.innerHTML=db.activities.map((x,i)=>'<tr><td>'+esc(x.subject)+'</td><td>'+esc(x.teacher)+'</td><td>'+esc(x.cls)+'</td><td>'+esc(x.room||'—')+'</td><td>'+x.duration+' س</td><td>'+x.count+'</td><td>'+esc(x.group||'كامل')+'</td><td><button class="btn danger" onclick="del(\'activities\','+i+')">حذف</button></td></tr>').join('');renderSchedule()}
+function addTeacher(){if(!tName.value.trim())return;db.teachers.push({name:tName.value.trim(),hours:+tHours.value||0});tName.value='';tHours.value='';render()}
+function addClass(){if(!cName.value.trim())return;db.classes.push(cName.value.trim());cName.value='';render()}
+function addRoom(){if(!rName.value.trim())return;db.rooms.push(rName.value.trim());rName.value='';render()}
+function addActivity(){if(!aSubject.value.trim()||!db.teachers[aTeacher.value]||!db.classes[aClass.value])return;db.activities.push({subject:aSubject.value.trim(),teacher:db.teachers[aTeacher.value].name,cls:db.classes[aClass.value],room:aRoom.value===''?'':db.rooms[aRoom.value],duration:+aDuration.value,count:+aCount.value||1,group:aGroup.value});aSubject.value='';render()}
+function del(k,i){db[k].splice(i,1);render()}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));msg.className='notice ok';msg.textContent='تم حفظ البيانات على هذا الجهاز.'}
+function load(){try{db=JSON.parse(localStorage.getItem(KEY))||db;render();msg.className='notice ok';msg.textContent='تم استرجاع البيانات.'}catch(e){}}
+function resetAll(){if(confirm('مسح جميع البيانات؟')){db={teachers:[],classes:[],rooms:[],activities:[],schedule:[]};localStorage.removeItem(KEY);render()}}
+function conflicts(item,start,day,occ){for(let k=0;k<item.duration;k++){let key=day+'|'+(start+k);if(occ[key]?.some(o=>o.teacher===item.teacher||o.cls===item.cls||(item.room&&o.room===item.room)))return true}return false}
+function generate(){db.schedule=[];let occ={};let units=[];db.activities.forEach((a,ai)=>{for(let n=0;n<a.count;n++)units.push({...a,id:ai,n})});units.sort((a,b)=>b.duration-a.duration);
+function place(i){if(i===units.length)return true;let a=units[i];for(let d=0;d<days.length;d++){for(let s=0;s<=slots.length-a.duration;s++){if(conflicts(a,s,days[d],occ))continue;let cells=[];for(let k=0;k<a.duration;k++){let key=days[d]+'|'+(s+k);(occ[key]??=[]).push(a);cells.push({day:days[d],slot:s+k});}db.schedule.push({...a,day:days[d],start:s,cells});if(place(i+1))return true;db.schedule.pop();cells.forEach(c=>{let key=c.day+'|'+c.slot;occ[key]=occ[key].filter(x=>x!==a)})}}return false}
+let ok=place(0);if(ok){msg.className='notice ok';msg.textContent='تم توليد جدول صالح مبدئيًا مع احترام مدة كل حصة ومنع تضارب الأستاذ والقسم والقاعة.'}else{msg.className='notice err';msg.textContent='تعذر إيجاد جدول بهذه القيود. خفّف بعض القيود أو أضف فترات/موارد.'}renderSchedule();document.querySelector('[data-tab="schedule"]').click()}
+function renderSchedule(){if(!scheduleView)return;let h='<table><thead><tr><th>اليوم</th>'+slots.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>';days.forEach(d=>{h+='<tr><th>'+d+'</th>';for(let s=0;s<6;s++){let a=db.schedule.find(x=>x.day===d&&x.start===s);if(a)h+='<td colspan="'+a.duration+'"><div class="activity"><b>'+esc(a.subject)+'</b><br>'+esc(a.cls)+'<br>'+esc(a.teacher)+(a.room?' — '+esc(a.room):'')+(a.group?' — '+esc(a.group):'')+'</div></td>';else if(!db.schedule.some(x=>x.day===d&&x.start<s&&x.start+x.duration>s))h+='<td></td>'}h+='</tr>'});h+='</tbody></table>';scheduleView.innerHTML=h}
+function exportCSV(){let rows=[['اليوم','البداية','النهاية','المادة','الأستاذ','القسم','القاعة','الفوج']];db.schedule.forEach(a=>rows.push([a.day,slots[a.start].split('–')[0],slots[a.start+a.duration-1].split('–')[1],a.subject,a.teacher,a.cls,a.room||'',a.group||'']));let csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');let u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));let a=document.createElement('a');a.href=u;a.download='jadwali-tounsi.csv';a.click();URL.revokeObjectURL(u)}
+render();
+</script></body></html>
